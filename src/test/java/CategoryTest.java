@@ -1,6 +1,7 @@
+import java.util.Arrays;
+import java.util.List;
 import org.junit.*;
 import static org.junit.Assert.*;
-import java.util.Arrays;
 
 public class CategoryTest {
 
@@ -34,21 +35,38 @@ public class CategoryTest {
     assertTrue(myCategory.equals(savedCategory));
   }
 
-  // @Test
-  // public void getTasks_retrievesALlTasksFromDatabase_tasksList() {
-  //   Category myCategory = new Category("Household chores");
-  //   myCategory.save();
-  //   Task firstTask = new Task("Mow the lawn", myCategory.getId(), "June 9th");
-  //   firstTask.save();
-  //   Task secondTask = new Task("Do the dishes", myCategory.getId(), "June 9th");
-  //   secondTask.save();
-  //   Task[] tasks = new Task[] { firstTask, secondTask };
-  //   assertTrue(myCategory.getTasks().containsAll(Arrays.asList(tasks)));
-  // }
+  @Test
+  public void addTask_addsTaskToCategory() {
+    Category myCategory = new Category("Chores");
+    myCategory.save();
+    Task myTask = new Task("Do the dishes");
+    myTask.save();
+    myCategory.addTask(myTask);
+    Task savedTask = myCategory.getTasks().get(0);
+    assertTrue(myTask.equals(savedTask));
+  }
 
-  // @Test
-  // public void sort_sortsTasksInCategoryByDueDate_true() {
-  //   Category myCategory = new Category("Household chores");
-  //   myCategory.save();
-  //
+  @Test
+  public void getTasks_returnsAllTasks() {
+    Category myCategory = new Category("Chores");
+    myCategory.save();
+    Task myTask = new Task("Do the dishes");
+    myTask.save();
+    myCategory.addTask(myTask);
+    List savedTasks = myCategory.getTasks();
+    assertEquals(savedTasks.size(), 1);
+  }
+
+  @Test
+  public void delete_deletesAllTasksAndListsAssoicationes() {
+    Category myCategory = new Category("Household chores");
+    myCategory.save();
+
+    Task myTask = new Task("Mow the lawn");
+    myTask.save();
+
+    myCategory.addTask(myTask);
+    myCategory.delete();
+    assertEquals(myTask.getCategories().size(), 0);
+  }
 }

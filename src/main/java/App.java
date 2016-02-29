@@ -1,71 +1,61 @@
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
+
 import spark.ModelAndView;
 import spark.template.velocity.VelocityTemplateEngine;
 import static spark.Spark.*;
 
+
 public class App {
   public static void main(String[] args) {
-    String layout = "views/layout.vtl";
+    staticFileLocation("/public");
+    String layout = "templates/layout.vtl";
 
     get("/", (request, response) -> {
       HashMap<String, Object> model = new HashMap<String, Object>();
+      model.put("template", "templates/tasks.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
 
-      // List<Category> delete = Category.all();
-      // delete.delete();
+    get("/tasks", (request,response) -> {
+      HashMap<String, Object> model = new HashMap<String, Object>();
+      List<Task> tasks = Task.all();
+      model.put("tasks", tasks);
+      model.put("template", "templates/tasks.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
 
-      model.put("template", "views/index.vtl");
+    get("/tasks/:id", (request,response) -> {
+      HashMap<String, Object> model = new HashMap<String, Object>();
+      int id = Integer.parseInt(request.params("id"));
+      Task task = Task.find(id);
+      model.put("task", task);
+      model.put("template", "templates/task.vtl");
       return new ModelAndView(model, layout);
     }, new VelocityTemplateEngine());
 
     post("/tasks", (request, response) -> {
       HashMap<String, Object> model = new HashMap<String, Object>();
-
-      // Category myCategory = request.session().attribute("category");
       String description = request.queryParams("description");
-      String duedate = request.queryParams("dueDate");
-      int categoryid = Integer.parseInt(request.queryParams("categoryid"));
+      Task newTask = new Task(description);
+      response.redirect("/tasks");
+      return null;
+    });
 
-      Task myTask = new Task(description, duedate, categoryid);
-      myTask.save();
-
-      model.put("categories", Category.all());
-      model.put("tasks", Task.all());
-      model.put("template", "views/index.vtl");
+    put("/tasks/:id", (request, response) -> {
+      HashMap<String, Object> model = new HashMap<String, Object>();
+      Task task = Task.find(Integer.parseInt(request.params("id")));
+      String description = request.queryParams("description");
+      task.update("description");
+      model.put("template", "templates/task.vtl");
       return new ModelAndView(model, layout);
     }, new VelocityTemplateEngine());
 
-    post("/categories", (request, response) -> {
+    delete("/tasks/:id", (request, response) -> {
       HashMap<String, Object> model = new HashMap<String, Object>();
-
-      String name = request.queryParams("name");
-      Category myCategory = new Category(name);
-      System.out.println(myCategory.getName());
-      // int id = myCategory.getId();
-      myCategory.save();
-      //request.session().attribute("category", myCategory);
-
-      model.put("categories", Category.all());
-      model.put("template", "views/index.vtl");
-      return new ModelAndView(model, layout);
-    }, new VelocityTemplateEngine());
-
-    get("/home", (request, response) -> {
-      HashMap<String, Object> model = new HashMap<String, Object>();
-
-
-      model.put("categories", Category.all());
-      model.put("template", "views/index.vtl");
-      return new ModelAndView(model, layout);
-    }, new VelocityTemplateEngine());
-
-    get("/categories/:id", (request, response) -> {
-      HashMap<String, Object> model = new HashMap<String, Object>();
-
-      model.put("category", Category.find(Integer.parseInt(request.params(":id"))));
-      model.put("tasks", Task.all());
-      model.put("template", "views/category.vtl");
+      Task task = Task.find(Integer.parseInt(request.params("id")));
+      task.delete();
+      model.put("template", "templates/task.vtl");
       return new ModelAndView(model, layout);
     }, new VelocityTemplateEngine());
   }

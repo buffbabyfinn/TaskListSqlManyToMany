@@ -1,11 +1,10 @@
+import java.util.ArrayList;
 import java.util.List;
 import org.sql2o.*;
 
 public class Task {
   private int id;
-  private int categoryid;
   private String description;
-  private String duedate;
 
   @Override
   public boolean equals(Object otherTask){
@@ -13,7 +12,7 @@ public class Task {
       return false;
     } else {
       Task newTask = (Task) otherTask;
-      return this.getDescription().equals(newTask.getDescription()) && this.getDueDate() == newTask.getDueDate() && this.getId() == newTask.getId();
+      return this.getDescription().equals(newTask.getDescription()) && this.getId() == newTask.getId();
     }
   }
 
@@ -21,26 +20,18 @@ public class Task {
     return id;
   }
 
-  public int getCategoryId() {
-    return categoryid;
-  }
-
-  public Task(String description, String duedate, int categoryid) {
+    public Task(String description) {
     this.description = description;
-    this.categoryid = categoryid;
-    this.duedate = duedate;
+    this.id = id;
   }
 
-  public String getDueDate() {
-    return duedate;
-  }
 
   public String getDescription() {
     return description;
   }
 
   public static List<Task> all() {
-    String sql = "SELECT id, description FROM Tasks";
+    String sql = "SELECT id, description FROM tasks";
     try(Connection con = DB.sql2o.open()) {
       return con.createQuery(sql).executeAndFetch(Task.class);
     }
@@ -48,11 +39,9 @@ public class Task {
 
   public void save() {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "INSERT INTO Tasks (description, duedate, categoryid) VALUES (:description, :duedate, :categoryid)";
+      String sql = "INSERT INTO tasks (description) VALUES (:description)";
       this.id = (int) con.createQuery(sql, true)
         .addParameter("description",  this.description)
-        .addParameter("duedate", this.duedate)
-        .addParameter("categoryid", this.categoryid)
         .executeUpdate()
         .getKey();
     }
@@ -78,34 +67,60 @@ public class Task {
     }
   }
 
-  public void updateDueDate(String duedate) {
+  public void delete() {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "UPDATE tasks SET duedate = (:duedate) WHERE id = (:id)";
+      String deleteQuery = "DELETE FROM tasks WHERE id = :id;";
+        con.createQuery(deleteQuery)
+          .addParameter("id", id)
+          .executeUpdate();
+
+      String joinDeleteQuery = "DELETE FROM categories_tasks WHERE task_id = :taskId";
+        con.createQuery(joinDeleteQuery)
+          .addParameter("taskId", this.getId())
+          .executeUpdate();
+    }
+  }
+
+
+  public void addCategory(Category category) {
+    try(Connection con = DB.sql2o.open()) {
+      String sql = "INSERT INTO categories_tasks (category_id, task_id) VALUES (:category_id, :task_id)";
       con.createQuery(sql)
-        .addParameter("duedate", duedate)
-        .addParameter("id", id)
+        .addParameter("category_id", category.getId())
+        .addParameter("task_id", this.getId())
         .executeUpdate();
     }
   }
 
-  // public void delete() {
-  //   try(Connection con = DB.sql2o.open()) {
-  //   String sql = "DELETE FROM tasks WHERE id = (:id)";
-  //     con.createQuery(sql)
-  //       .addParameter("id", id)
-  //       .executeUpdate();
-  //   }
-  // }
+  public ArrayList<Category> getCategories() {
+    try(Connection con = DB.sql2o.open()){
+      String sql = "SELECT category_id FROM categories_tasks WHERE task_id = :task_id";
+      List<Integer> categoryIds = con.createQuery(sql)
+        .addParameter("task_id", this.getId())
+        .executeAndFetch(Integer.class);
 
+      ArrayList<Category> categories = new ArrayList<Category>();
 
-
-  public List<Task> sortTasks() {
-    try(Connection con = DB.sql2o.open()) {
-      String sql = "SELECT * FROM tasks where categoryid = (:id) ORDER BY duedate=(:duedate) [ASC] [NULLS {FIRST}]";
-      return con.createQuery(sql)
-        .addParameter("id", id)
-        .addParameter("duedate", duedate)
-        .executeAndFetch(Task.class);
+      for (Integer categoryId : categoryIds) {
+          String taskQuery = "Select * From categories WHERE id = :categoryId";
+          Category category = con.createQuery(taskQuery)
+            .addParameter("categoryId", categoryId)
+            .executeAndFetchFirst(Category.class);
+          categories.add(category);
+      }
+      return categories;
     }
   }
+
+
+  //
+  // public List<Task> sortTasks() {
+  //   try(Connection con = DB.sql2o.open()) {
+  //     String sql = "SELECT * FROM tasks where categoryid = (:id) ORDER BY duedate=(:duedate) [ASC] [NULLS {FIRST}]";
+  //     return con.createQuery(sql)
+  //       .addParameter("id", id)
+  //       .addParameter("duedate", duedate)
+  //       .executeAndFetch(Task.class);
+  //   }
+  // }
 }
