@@ -1,0 +1,8 @@
+<h1>$category.getName()</h1>
+<h3>Here are all the tasks in this category:</h3>
+
+#foreach($task in $category.getTasks())
+ <h3>$task.getDescription()</h3>
+#end
+
+<a href="/home"><button class="btn btn-success">Return to Main Page</button></a>
