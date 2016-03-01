@@ -1,0 +1,30 @@
+<h1>$task.getDescription()</h1>
+<br>
+#if ($task.getCategories())
+<h4>Here are all the categories for this task:</h4>
+  <ul>
+    #foreach($category in $task.getCategories())
+      <p>$category.getName()</p>
+    #end
+  </ul>
+#end
+<br>
+<h4>Add a category to this task:</h4>
+<br>
+<form class="form-group form-inline" action="/add_categories" method="post">
+  <input type="hidden" id="task_id" name="task_id" value="$task.getId()">
+  <label for="category_id">Select a category</label>
+  <select id="category_id" name="category_id" type="text">
+    #foreach ($category in $allCategories)
+      <option value="$category.getId()"> $category.getName() </option>
+    #end
+  </select>
+  <button type="submit" class="btn btn-success">Add task</button>
+</form>
+<br>
+<br>
+<br>
+<a href="/tasks/$task.getId()/edit"><button type="button" name="taskUpdate" class="btn btn-warning">Edit this Task</button></a>
+<br>
+<br>
+<a href="/"><button class="btn btn-default">Home</button></a>

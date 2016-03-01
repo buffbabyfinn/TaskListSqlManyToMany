@@ -1,0 +1,11 @@
+<h3>Edit $task.getDescription()</h3>
+<br>
+<form class="form-group form-inline" action="/tasks/$task.getId()/edit" method="post">
+  <label for="description">Task's new description:</label>
+  <input id="description" type="text" name="description">
+  <button type="submit" class="btn btn-success" name="description">Update task</button>
+</form>
+<br>
+<br>
+<br>
+<a href="/"><button class="btn btn-default">Home</button></a>

@@ -31,7 +31,7 @@ public class Task {
   }
 
   public static List<Task> all() {
-    String sql = "SELECT id, description FROM tasks";
+    String sql = "SELECT * FROM tasks";
     try(Connection con = DB.sql2o.open()) {
       return con.createQuery(sql).executeAndFetch(Task.class);
     }
@@ -49,7 +49,7 @@ public class Task {
 
   public static Task find(int id) {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "SELECT * FROM Tasks where id = (:id)";
+      String sql = "SELECT * FROM Tasks where id = :id";
       Task task = con.createQuery(sql)
         .addParameter("id", id)
         .executeAndFetchFirst(Task.class);
@@ -59,11 +59,16 @@ public class Task {
 
   public void update(String description) {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "UPDATE tasks SET description = (:description) WHERE id = (:id)";
-      con.createQuery(sql)
-        .addParameter("description", description)
-        .addParameter("id", id)
-        .executeUpdate();
+      String sql = "UPDATE tasks SET description = :description WHERE id = :id";
+        con.createQuery(sql)
+          .addParameter("description", description)
+          .addParameter("id", id)
+          .executeUpdate();
+
+      // String joinUpdate = "UPDATE categories_tasks SET task_id = (:taskId)";
+      //   con.createQuery(joinUpdate)
+      //   .addParameter("taskId", this.getId())
+      //   .executeUpdate();
     }
   }
 

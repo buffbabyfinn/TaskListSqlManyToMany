@@ -1,0 +1,11 @@
+<h3>Edit $category.getName()</h3>
+<br>
+<form class="form-group form-inline" action="/categories/$category.getId()/edit" method="post">
+  <label for="name">Task's new name:</label>
+  <input id="name" type="text" name="name">
+  <button type="submit" class="btn btn-success" name="categoryUpdate">Update category</button>
+</form>
+<br>
+<br>
+<br>
+<a href="/"><button class="btn btn-default">Home</button></a>
